@@ -18,14 +18,9 @@
 #define ISHA_BLOCKLEN  64  // length of an ISHA block, in bytes
 #define ISHA_DIGESTLEN 20  // length of an ISHA digest, in bytes
 
-//#define bswap32(x) ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) | (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24))
-
 typedef struct 
 {
   uint32_t MD[5];        // Message Digest (output)
-
-  //uint32_t Length_Low;   // Message length in bits
-  //uint32_t Length_High;  // Message length in bits
 
   uint32_t Length_Buffer;
   uint8_t MBlock[64];    // 512-bit message blocks

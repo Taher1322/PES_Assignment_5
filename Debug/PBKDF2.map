@@ -2195,24 +2195,24 @@ OUTPUT(PBKDF2.axf elf32-littlearm)
  .debug_macro   0x00008e5d       0x10 ./board/pin_mux.o
  .debug_macro   0x00008e6d       0x94 ./CMSIS/system_MKL25Z4.o
 
-.debug_line     0x00000000     0x575b
+.debug_line     0x00000000     0x5747
  .debug_line    0x00000000      0x4f5 ./utilities/fsl_debug_console.o
  .debug_line    0x000004f5      0x1e7 ./startup/startup_mkl25z4.o
- .debug_line    0x000006dc      0x378 ./source/isha.o
- .debug_line    0x00000a54      0x4be ./source/main.o
- .debug_line    0x00000f12       0xd1 ./source/mtb.o
- .debug_line    0x00000fe3      0x2f8 ./source/pbkdf2.o
- .debug_line    0x000012db      0x437 ./source/pbkdf2_test.o
- .debug_line    0x00001712       0x59 ./source/semihost_hardfault.o
- .debug_line    0x0000176b      0x370 ./source/ticktime.o
- .debug_line    0x00001adb     0x12fa ./drivers/fsl_clock.o
- .debug_line    0x00002dd5      0xd73 ./drivers/fsl_lpsci.o
- .debug_line    0x00003b48      0xd62 ./drivers/fsl_uart.o
- .debug_line    0x000048aa      0x3b1 ./board/board.o
- .debug_line    0x00004c5b      0x3f5 ./board/clock_config.o
- .debug_line    0x00005050       0x5c ./board/peripherals.o
- .debug_line    0x000050ac      0x37c ./board/pin_mux.o
- .debug_line    0x00005428      0x333 ./CMSIS/system_MKL25Z4.o
+ .debug_line    0x000006dc      0x36e ./source/isha.o
+ .debug_line    0x00000a4a      0x4be ./source/main.o
+ .debug_line    0x00000f08       0xd1 ./source/mtb.o
+ .debug_line    0x00000fd9      0x2ee ./source/pbkdf2.o
+ .debug_line    0x000012c7      0x437 ./source/pbkdf2_test.o
+ .debug_line    0x000016fe       0x59 ./source/semihost_hardfault.o
+ .debug_line    0x00001757      0x370 ./source/ticktime.o
+ .debug_line    0x00001ac7     0x12fa ./drivers/fsl_clock.o
+ .debug_line    0x00002dc1      0xd73 ./drivers/fsl_lpsci.o
+ .debug_line    0x00003b34      0xd62 ./drivers/fsl_uart.o
+ .debug_line    0x00004896      0x3b1 ./board/board.o
+ .debug_line    0x00004c47      0x3f5 ./board/clock_config.o
+ .debug_line    0x0000503c       0x5c ./board/peripherals.o
+ .debug_line    0x00005098      0x37c ./board/pin_mux.o
+ .debug_line    0x00005414      0x333 ./CMSIS/system_MKL25Z4.o
 
 .debug_str      0x00000000    0x35ff0
  .debug_str     0x00000000    0x31638 ./utilities/fsl_debug_console.o
