@@ -10,7 +10,6 @@
 #include <assert.h>
 
 #include "pbkdf2.h"
-//#include <string.h>
 #include <stdio.h>
 
 
@@ -79,6 +78,7 @@ static void F(const uint8_t *pass, size_t pass_len,
 
 
   __builtin_memcpy(saltplus,salt,salt_len);
+
   saltplus[salt_len] = (blkidx & 0xff000000) >> 24;
   saltplus[salt_len+1] = (blkidx & 0x00ff0000) >> 16;
   saltplus[salt_len+2] = (blkidx & 0x0000ff00) >> 8;
@@ -88,8 +88,6 @@ static void F(const uint8_t *pass, size_t pass_len,
   hmac_isha(pass, pass_len, saltplus, salt_len+4, temp);
 
   __builtin_memcpy(result,temp,ISHA_DIGESTLEN);
-
-
 
   iter = iter-1;
   while(iter--)
@@ -121,10 +119,6 @@ static void F(const uint8_t *pass, size_t pass_len,
   }
 }
 
-
-
-
-
 /*
  * See function description in pbkdf2.h
  */
@@ -133,7 +127,6 @@ void pbkdf2_hmac_isha(const uint8_t *pass, size_t pass_len,
 {
 
   register int l = dkLen / ISHA_DIGESTLEN + 1;
-
 
   while(l--)
   {

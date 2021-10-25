@@ -162,7 +162,6 @@ void ISHAInput(ISHAContext *ctx, const uint8_t *message_array, size_t length)
   			  ISHAProcessMessageBlock(ctx);
   		  }
   	  }
-
   }
 
 }
