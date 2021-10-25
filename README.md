@@ -21,7 +21,7 @@ Changes made to reduce the overall execution run time are as follows: </br>
 
 # Function -->  void pbkdf2_hmac_isha(const uint8_t *pass, size_t pass_len, const uint8_t *salt, size_t salt_len, int iter, size_t dkLen, uint8_t *DK) </br>
 
-Previously - </br>
+Originally - </br>
 
 void pbkdf2_hmac_isha(const uint8_t *pass, size_t pass_len,
     const uint8_t *salt, size_t salt_len, int iter, size_t dkLen, uint8_t *DK) </br>
@@ -63,7 +63,7 @@ void pbkdf2_hmac_isha(const uint8_t *pass, size_t pass_len,
 
 # Function --> static void F(const uint8_t *pass, size_t pass_len, const uint8_t *salt, size_t salt_len, int iter, unsigned int blkidx, uint8_t *result) </br>
 
-Previously - </br>
+Originally - </br>
 
 static void F(const uint8_t *pass, size_t pass_len,
     const uint8_t *salt, size_t salt_len,
@@ -169,6 +169,248 @@ Changed to </br>
 
 
 ********************************************************************************************************</br>
+
+# Function --> void hmac_isha(const uint8_t *key, size_t key_len, const uint8_t *msg, size_t msg_len, uint8_t *digest)   </br>
+
+Originally - </br>
+
+void hmac_isha(const uint8_t *key, size_t key_len,
+    const uint8_t *msg, size_t msg_len,
+    uint8_t *digest)
+{
+  uint8_t ipad[ISHA_BLOCKLEN];
+  uint8_t opad[ISHA_BLOCKLEN];
+  uint8_t keypad[ISHA_BLOCKLEN];
+  uint8_t inner_digest[ISHA_DIGESTLEN];
+  size_t i;
+  ISHAContext ctx;
+
+  if (key_len > ISHA_BLOCKLEN) {
+    // If key_len > ISHA_BLOCKLEN reset it to key=ISHA(key)
+    ISHAReset(&ctx);
+    ISHAInput(&ctx, key, key_len);
+    ISHAResult(&ctx, keypad);
+
+  } else {
+    // key_len <= ISHA_BLOCKLEN; copy key into keypad, zero pad the result
+    for (i=0; i<key_len; i++)
+      keypad[i] = key[i];
+    for(i=key_len; i<ISHA_BLOCKLEN; i++)
+      keypad[i] = 0x00;
+  }
+
+  // XOR key into ipad and opad
+  for (i=0; i<ISHA_BLOCKLEN; i++) {
+    ipad[i] = keypad[i] ^ 0x36;
+    opad[i] = keypad[i] ^ 0x5c;
+  }
+
+  // Perform inner ISHA
+  ISHAReset(&ctx);
+  ISHAInput(&ctx, ipad, ISHA_BLOCKLEN);
+  ISHAInput(&ctx, msg, msg_len);
+  ISHAResult(&ctx, inner_digest);
+
+  // perform outer ISHA
+  ISHAReset(&ctx);
+  ISHAInput(&ctx, opad, ISHA_BLOCKLEN);
+  ISHAInput(&ctx, inner_digest, ISHA_DIGESTLEN);
+  ISHAResult(&ctx, digest);
+}
+
+
+Updates done for this functions are - </br>
+
+ // XOR key into ipad and opad
+  for (i=0; i<ISHA_BLOCKLEN; i++) {
+    ipad[i] = keypad[i] ^ 0x36;
+    opad[i] = keypad[i] ^ 0x5c;
+  }
+
+Changed to </br
+
+ while(i--)
+  {
+	  *(ipad+i) = *(key+i) ^ 0x36;
+	  *(opad+i) = *(key+i) ^ 0x5c;
+  }
+
+  __builtin_memset(ipad+key_len,0x36,ISHA_BLOCKLEN-key_len);
+  __builtin_memset(opad+key_len,0x5c,ISHA_BLOCKLEN-key_len);
+
+
+----------------------------------------------------------</br>
+
+1. Removed the if-else logic which included performing array copying and zero padding</br>
+2. XOR logic for function was changed with while function with extra padding operation </br>
+
+
+********************************************************************************************************</br>
+
+# Function --> void ISHAReset(ISHAContext *ctx) </br>
+
+Originally - 
+
+void ISHAReset(ISHAContext *ctx)
+{
+  ctx->Length_Low  = 0;
+  ctx->Length_High = 0;
+  ctx->MB_Idx      = 0;
+
+  ctx->MD[0]       = 0x67452301;
+  ctx->MD[1]       = 0xEFCDAB89;
+  ctx->MD[2]       = 0x98BADCFE;
+  ctx->MD[3]       = 0x10325476;
+  ctx->MD[4]       = 0xC3D2E1F0;
+
+  ctx->Computed    = 0;
+  ctx->Corrupted   = 0;
+}
+
+
+Changed to </br>
+
+void ISHAReset(ISHAContext *ctx)
+{
+
+  ctx->Length_Buffer = 0;
+  ctx->MB_Idx      = 0;
+
+  ctx->MD[0]       = 0x67452301;
+  ctx->MD[1]       = 0xEFCDAB89;
+  ctx->MD[2]       = 0x98BADCFE;
+  ctx->MD[3]       = 0x10325476;
+  ctx->MD[4]       = 0xC3D2E1F0;
+
+  ctx->Computed    = 0;
+  ctx->Corrupted   = 0;
+}
+
+1. Processing time reduced by using since Buffer length instead of two buffer lengths in every function </br>
+
+********************************************************************************************************</br>
+
+# Function --> static void ISHAProcessMessageBlock(ISHAContext *ctx) </br>
+
+Originally </br>
+
+static void ISHAProcessMessageBlock(ISHAContext *ctx)
+{
+  uint32_t temp; 
+  int t;
+  uint32_t W[16];
+  uint32_t A, B, C, D, E;
+
+  A = ctx->MD[0];
+  B = ctx->MD[1];
+  C = ctx->MD[2];
+  D = ctx->MD[3];
+  E = ctx->MD[4];
+
+  for(t = 0; t < 16; t++)
+  {
+    W[t] = ((uint32_t) ctx->MBlock[t * 4]) << 24;
+    W[t] |= ((uint32_t) ctx->MBlock[t * 4 + 1]) << 16;
+    W[t] |= ((uint32_t) ctx->MBlock[t * 4 + 2]) << 8;
+    W[t] |= ((uint32_t) ctx->MBlock[t * 4 + 3]);
+  }
+
+  for(t = 0; t < 16; t++)
+  {
+    temp = ISHACircularShift(5,A) + ((B & C) | ((~B) & D)) + E + W[t];
+    temp &= 0xFFFFFFFF;
+    E = D;
+    D = C;
+    C = ISHACircularShift(30,B);
+    B = A;
+    A = temp;
+  }
+
+  ctx->MD[0] = (ctx->MD[0] + A) & 0xFFFFFFFF;
+  ctx->MD[1] = (ctx->MD[1] + B) & 0xFFFFFFFF;
+  ctx->MD[2] = (ctx->MD[2] + C) & 0xFFFFFFFF;
+  ctx->MD[3] = (ctx->MD[3] + D) & 0xFFFFFFFF;
+  ctx->MD[4] = (ctx->MD[4] + E) & 0xFFFFFFFF;
+
+  ctx->MB_Idx = 0;
+}
+
+Changed to </br> 
+
+static void ISHAProcessMessageBlock(ISHAContext *ctx)
+{
+   register uint32_t temp;
+   register int t=0;
+   register uint32_t A, B, C, D, E;
+
+  A = ctx->MD[0];
+  B = ctx->MD[1];
+  C = ctx->MD[2];
+  D = ctx->MD[3];
+  E = ctx->MD[4];
+
+  while(t<16) {
+	  temp = ISHACircularShift(5,A) + ((B & C) | ((~B) & D)) + E + (((uint32_t) ctx->MBlock[t * 4]) << 24 | ((uint32_t) ctx->MBlock[t * 4 + 1]) << 16
+	      		| ((uint32_t) ctx->MBlock[t * 4 + 2]) << 8 | ((uint32_t) ctx->MBlock[t * 4 + 3]) );
+	  E = D;
+	  D = C;
+	  C = ISHACircularShift(30,B);
+	  B = A;
+	  A = temp;
+	  t++;
+  }
+
+
+  ctx->MD[0] += A;
+  ctx->MD[1] += B;
+  ctx->MD[2] += C;
+  ctx->MD[3] += D;
+  ctx->MD[4] += E;
+
+  ctx->MB_Idx = 0;
+
+}
+
+1. Instead of using two for loops running for t = 0 till t <16 i.e 16 times merged it into single for loop </br> 
+2. W(t) was combined into single while loop </br>
+
+
+********************************************************************************************************</br>
+
+# Function --> void ISHAResult(ISHAContext *ctx, uint8_t *digest_out) </br>
+
+Originally </br> 
+
+void ISHAResult(ISHAContext *ctx, uint8_t *digest_out)
+{
+  if (ctx->Corrupted)
+  {
+    return;
+  }
+
+  if (!ctx->Computed)
+  {
+    ISHAPadMessage(ctx);
+    ctx->Computed = 1;
+  }
+
+  for (int i=0; i<20; i+=4) {
+    digest_out[i]   = (ctx->MD[i/4] & 0xff000000) >> 24;
+    digest_out[i+1] = (ctx->MD[i/4] & 0x00ff0000) >> 16;
+    digest_out[i+2] = (ctx->MD[i/4] & 0x0000ff00) >> 8;
+    digest_out[i+3] = (ctx->MD[i/4] & 0x000000ff);
+  }
+
+  return;
+}
+
+
+Updated to </br>
+
+
+
+
+
 
 
 
