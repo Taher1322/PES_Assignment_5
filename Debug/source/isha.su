@@ -1,4 +1,4 @@
-isha.c:33:13:ISHAProcessMessageBlock	48	static
-isha.c:162:6:ISHAReset	16	static
-isha.c:189:6:ISHAResult	16	static
-isha.c:282:6:ISHAInput	24	static
+isha.c:31:13:ISHAProcessMessageBlock	48	static
+isha.c:142:6:ISHAReset	16	static
+isha.c:162:6:ISHAResult	16	static
+isha.c:253:6:ISHAInput	24	static
