@@ -563,7 +563,18 @@ void ISHAInput(ISHAContext *ctx, const uint8_t *message_array, size_t length)
 
 Originally - </br> 
 
-
+Memory region         Used Size  Region Size  %age Used		</br> 
+   PROGRAM_FLASH:       21064 B       128 KB     16.07%		</br> 
+            SRAM:        9732 B        16 KB     59.40%		</br> 
+Finished building target: PBKDF2.axf						</br> 
+ 
+make --no-print-directory post-build						</br> 
+Performing post-build steps									</br> 				
+arm-none-eabi-size "PBKDF2.axf"; # arm-none-eabi-objcopy -v -O binary "PBKDF2.axf" "PBKDF2.bin" ; # checksum -p MKL25Z128xxx4 -d "PBKDF2.bin"; </br> 
+   text	   data	    bss	    dec	    hex	filename			</br> 
+  21056	      8	   9724	  30788	   7844	PBKDF2.axf			</br> 
+  
+20488 bytes </br>   
 
 Updated - </br> 
 
@@ -586,6 +597,8 @@ arm-none-eabi-size "PBKDF2.axf"; # arm-none-eabi-objcopy -v -O binary "PBKDF2.ax
 # Run Time Analysis </br> 
  
 Originally - </br> 
+
+8744 mseconds
 
 Updated - </br> 
 
