@@ -22,7 +22,6 @@
 #include "pbkdf2_test.h"
 #include "ticktime.h"
 
-extern uint32_t counter;
 /*
  * Times a single call to the pbkdf2_hmac_isha function, and prints
  * the resulting duration
@@ -103,8 +102,6 @@ int main(void) {
 
   printf("Running timing test...\r\n");
   time_pbkdf2_hmac_isha();
-
-  //printf("Counter value is %d\r\n", counter);
 
   return 0 ;
 }

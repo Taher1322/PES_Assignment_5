@@ -353,8 +353,8 @@ static void ISHAProcessMessageBlock(ISHAContext *ctx) </br>
   E = ctx->MD[4]; </br>
 
   while(t<16) { </br>
-	  temp = ISHACircularShift(5,A) + ((B & C) | ((~B) & D)) + E + (((uint32_t) ctx->MBlock[t * 4]) << 24 | ((uint32_t) ctx->MBlock[t * 4 + 1]) << 16
-	      		| ((uint32_t) ctx->MBlock[t * 4 + 2]) << 8 | ((uint32_t) ctx->MBlock[t * 4 + 3]) ); </br>
+  
+	  temp = ISHACircularShift(5,A) + ((B & C) | ((~B) & D)) + E + __builtin_bswap32(*((uint32_t*)(ctx->MBlock + (t<<2)) )); </br>
 	  E = D; </br>
 	  D = C; </br>
 	  C = ISHACircularShift(30,B); </br>
@@ -559,7 +559,7 @@ void ISHAInput(ISHAContext *ctx, const uint8_t *message_array, size_t length)
 
 ********************************************************************************************************</br>
 
-# Size Text Analysis </br>
+# Size Text Analysis - Memory View </br>
 
 Originally - </br> 
 
@@ -574,23 +574,58 @@ arm-none-eabi-size "PBKDF2.axf"; # arm-none-eabi-objcopy -v -O binary "PBKDF2.ax
    text	   data	    bss	    dec	    hex	filename			</br> 
   21056	      8	   9724	  30788	   7844	PBKDF2.axf			</br> 
   
-20488 bytes </br>   
+21064 bytes </br>   
 
 Updated - </br> 
 
-Memory region         Used Size  Region Size  %age Used    </br> 
-   PROGRAM_FLASH:       20488 B       128 KB     15.63%    </br> 
-            SRAM:        9732 B        16 KB     59.40%    </br> 
-Finished building target: PBKDF2.axf                       </br> 
+Memory region         Used Size  Region Size  %age Used </br>
+   PROGRAM_FLASH:       20448 B       128 KB     15.60% </br>
+            SRAM:        9732 B        16 KB     59.40% </br>
+Finished building target: PBKDF2.axf </br>
  
-make --no-print-directory post-build                       </br> 
-Performing post-build steps								   </br> 
-arm-none-eabi-size "PBKDF2.axf"; # arm-none-eabi-objcopy -v -O binary "PBKDF2.axf" "PBKDF2.bin" ; # checksum -p MKL25Z128xxx4 -d "PBKDF2.bin";  </br> 
-   text	   data	    bss	    dec	    hex	filename  		   </br> 
-  20480	      8	   9724	  30212	   7604	PBKDF2.axf 		   </br> 
+make --no-print-directory post-build </br>
+Performing post-build steps </br>
+arm-none-eabi-size "PBKDF2.axf"; # arm-none-eabi-objcopy -v -O binary "PBKDF2.axf" "PBKDF2.bin" ; # checksum -p MKL25Z128xxx4 -d "PBKDF2.bin"; </br>
+   text	   data	    bss	    dec	    hex	filename </br>
+  20440	      8	   9724	  30172	   75dc	PBKDF2.axf </br>
   
-20488 bytes </br> 
+20440 bytes </br> 
 
+
+
+# SIZE .TEXT ANALYSIS - Code View </br>
+
+Original .text segment size  </br>
+
+000005bc l     F .text	00000154 time_pbkdf2_hmac_isha </br>
+000009b0 g     F .text	00000130 pbkdf2_hmac_isha </br>
+000007d4 l     F .text	000001dc F </br>
+00003eee g     F .text	00000186 hmac_isha </br>
+0000055c g     F .text	00000060 ISHAReset </br>
+00003d80 g     F .text	000000c0 ISHAResult </br>
+00003e40 g     F .text	000000ae ISHAInput </br>
+00003c72 l     F .text	0000010e ISHAPadMessage </br>
+00003b20 l     F .text	00000152 ISHAProcessMessageBlock </br>
+00000710 l     F .text	00000078 run_tests </br>
+
+Total – 0x00000A8C </br>
+
+Optimized .text segment size </br>
+
+000005b8 l     F .text	00000154 time_pbkdf2_hmac_isha </br>
+00003e14 g     F .text	0000005a pbkdf2_hmac_isha </br>
+00003bd6 l     F .text	0000023e F </br>
+00003af0 g     F .text	000000e6 hmac_isha </br>
+0000055c g     F .text	0000005c ISHAReset </br>
+000038fe g     F .text	0000015a ISHAResult </br>
+00003a58 g     F .text	00000098 ISHAInput </br>
+0000381c l     F .text	000000bc ISHAProcessMessageBlock </br>
+0000070c l     F .text	00000078 run_tests </br>
+
+Total – 0x00000854 </br>
+
+Difference of .text segment size = Original total – Optimized total </br>
+	0x0A8C – 0x0854 = 0x0238 (568 in decimal)  </br>
 
 ********************************************************************************************************</br>
 
@@ -602,13 +637,9 @@ Originally - </br>
 
 Updated - </br> 
 
-2262 mseconds
+1833 mseconds
 
 ********************************************************************************************************</br>
-
-
-
-
 
 # Development Details </br>
 Software used Developed using MCUExpresso IDE 7.2.0 on Windows 10. </br>
